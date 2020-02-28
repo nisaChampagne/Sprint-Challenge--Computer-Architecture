@@ -51,8 +51,12 @@ class CPU:
         # program counter
         self.program_counter = 0
 
-        #branchtable to help alleviate if-elif-else chain and DRY up code
+        # A branchtable, or jump table, will help alleviate if-elif-else chain and DRY up code
+        ### self.branchtable is a dictionary 
         self.branchtable = {}
+        # [PRN] would be a pointer to the corresponding function in the branchtable
+        ### [PRN] would be the key in the key:value pair
+        ### self.handle_prn would be the value
         self.branchtable[PRN] = self.handle_prn
         self.branchtable[LDI] = self.handle_ldi
         self.branchtable[PUSH] = self.handle_push
@@ -65,10 +69,12 @@ class CPU:
         self.branchtable[JMP] = self.handle_jmp
         self.branchtable[JNE] = self.handle_jne
 
-        self.less_flag = 0b00000000 # set to 0
-        self.greater_flag = 0b00000000 # set to 0
-        self.equal_flag = 0b00000000 # set to 0
-        self.flag = 0b00000000
+        #The flag register `FL` holds the current flags status
+        # 0b00000LGE
+        self.fl = 0b00000000 # set to 0
+        self.equal_to = 0b00000001
+        self.less_than = 0b000000100
+        self.greater_than = 0b00000010
 
     def ram_read(self,mem_address):
         return self.ram[mem_address]
@@ -117,7 +123,29 @@ class CPU:
     #sprint
     def handle_cmp(self, operand_a, operand_b):
         self.alu('CMP', operand_a, operand_b)
-        self.program_counter += 3
+        self.program_counter += 3 # three steps for next instruction
+
+    #Jump to the address stored in the given register.
+    #Set the `PC` to the address stored in the given register.
+    def handle_jmp(self, operand_a, operand_b):
+        self.program_counter = self.reg[operand_a]
+
+
+    #If `equal` flag is set (true), jump to the address stored in the given register.
+    def handle_jeq(self, *args):
+        # *args allow you to pass multiple arguments or keyword arguments to a function
+        if self.fl== 0b00000001:
+            self.handle_jmp(*args)
+        else:
+            self.program_counter += 2 # two steps for next instruction
+
+    #If `E` flag is clear (false, 0), jump to the address stored in the given register.
+    def handle_jne(self, *args):
+        # *args allow you to pass multiple arguments or keyword arguments to a function
+        if self.fl == 0b00000100:
+            self.handle_jmp(*args)
+        else:
+            self.program_counter += 2 # two steps to next instruction
     
     def load(self, filename):
         """Load a program into memory."""
@@ -162,15 +190,22 @@ class CPU:
             self.reg[reg_a] /= self.reg[reg_b]
 
         #sprint
+
+        #`FL` bits: `00000LGE`
+
         elif op == 'CMP':
             if self.reg[reg_a] == self.reg[reg_b]:
-                self.equal_flag == 0b00000001 # set to 1
+                #0000000E
+                self.fl = self.equal_to
             elif self.reg[reg_a] < self.reg[reg_b]:
-                self.less_flag == 0b00000001
+                #00000L00
+                self.fl = self.less_than
             elif self.reg[reg_a] > self.reg[reg_b]:
-                self.greater_flag == 0b00000001
+                #000000G0
+                self.fl = self.greater_than
             else:
-                self.flag = 0b00000000
+                # set to 0
+                self.fl = 0b00000000
         else:
             raise Exception("Unsupported ALU operation")
 
