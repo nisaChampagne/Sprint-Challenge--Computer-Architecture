@@ -65,6 +65,11 @@ class CPU:
         self.branchtable[JMP] = self.handle_jmp
         self.branchtable[JNE] = self.handle_jne
 
+        self.less_flag = 0b00000000 # set to 0
+        self.greater_flag = 0b00000000 # set to 0
+        self.equal_flag = 0b00000000 # set to 0
+        self.flag = 0b00000000
+
     def ram_read(self,mem_address):
         return self.ram[mem_address]
 
@@ -109,6 +114,11 @@ class CPU:
         self.program_counter = self.ram[self.reg[SP]]
         self.reg[SP] += 1
 
+    #sprint
+    def handle_cmp(self, operand_a, operand_b):
+        self.alu('CMP', operand_a, operand_b)
+        self.program_counter += 3
+    
     def load(self, filename):
         """Load a program into memory."""
 
@@ -150,6 +160,17 @@ class CPU:
                 print("Error: cannot divide by 0 silly")
                 sys.exit()
             self.reg[reg_a] /= self.reg[reg_b]
+
+        #sprint
+        elif op == 'CMP':
+            if self.reg[reg_a] == self.reg[reg_b]:
+                self.equal_flag == 0b00000001 # set to 1
+            elif self.reg[reg_a] < self.reg[reg_b]:
+                self.less_flag == 0b00000001
+            elif self.reg[reg_a] > self.reg[reg_b]:
+                self.greater_flag == 0b00000001
+            else:
+                self.flag = 0b00000000
         else:
             raise Exception("Unsupported ALU operation")
 
