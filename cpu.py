@@ -236,7 +236,7 @@ class CPU:
         # Before the loop starts, initialize stack pointer in R7
         self.reg[SP] = 0xF4
         while running:
-            # Start the CPU. start storing instructions in IR
+            # Start the CPU. start storing instructions in instruction_register
             instruction_register = self.ram_read(self.program_counter)
             operand_a = self.ram_read(self.program_counter+1)
             operand_b = self.ram_read(self.program_counter+2)
