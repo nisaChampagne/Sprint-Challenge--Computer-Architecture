@@ -60,6 +60,10 @@ class CPU:
         self.branchtable[CALL] = self.handle_call
         self.branchtable[RET] = self.handle_ret
         self.branchtable[MUL] = self.handle_mul
+        self.branchtable[CMP] = self.handle_cmp
+        self.branchtable[JEQ] = self.handle_jeq
+        self.branchtable[JMP] = self.handle_jmp
+        self.branchtable[JNE] = self.handle_jne
 
     def ram_read(self,mem_address):
         return self.ram[mem_address]
